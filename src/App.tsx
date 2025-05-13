@@ -36,6 +36,7 @@ function App() {
   const [filteredUri, setFilteredUri] = useState<Array<URIType>>([]);
   const [profiles, setProfiles] = useState<ProfileType[]>([]);
   const [profile, setProfile] = useState(0);
+  const [testAllCount, setTestAllCount] = useState({ failed: 0, success: 0 });
   const stopTesting = useRef<boolean>(false);
   const [isRunningTests, setIsRunningTests] = useState(false);
   const updateProfiles = async () => {
@@ -48,7 +49,7 @@ function App() {
   }, []);
 
   const updateUris = async (profile_id: number) => {
-    const uris = await db?.select<React.SetStateAction<URIType[]>>("select * from urls where profile_id = $1 order by CASE WHEN delay IS NULL OR delay = 0 OR delay = -1 THEN 1 ELSE 0 END,delay asc", [profile_id]);
+    const uris = await db?.select<React.SetStateAction<URIType[]>>("select * from urls where profile_id = ? order by CASE WHEN delay IS NULL OR delay = 0 OR delay = -1 THEN 1 ELSE 0 END,delay asc", [profile_id]);
     if (uris) {
       setUris(uris);
       setFilteredUri(uris);
@@ -132,6 +133,7 @@ function App() {
   }
 
   const stopTestAll = () => {
+    setTestAllCount({ success: 0, failed: 0 });
     stopTesting.current = true;
     setIsRunningTests(false);
   };
@@ -141,24 +143,26 @@ function App() {
       return;
     }
     stopTesting.current = false;
-    const concurrency = 1;
-    const queue = [...uris];
-    const results: Promise<void>[] = [];
-
-    const runner = async () => {
-      while (queue.length > 0 && !stopTesting.current) {
-        const uri = queue.shift();
-        if (uri) await updateDelay(uri, true);
+    for (const uri of uris) {
+      if (stopTesting.current) {
+        break;
       }
-    };
+      const delay = await updateDelay(uri, true);
 
-    for (let i = 0; i < concurrency; i++) {
-      results.push(runner());
+      setTestAllCount((prev) => {
+        let ret = prev;
+        if (delay === -1) {
+          ret.failed = prev.failed + 1;
+        } else {
+          ret.success = prev.success + 1;
+        }
+        return ret;
+      });
     }
-
-    await Promise.all(results);
   }
+
   const testAllHandler = async () => {
+    setTestAllCount({ success: 0, failed: 0 });
     setIsRunningTests(true);
     await startTestAll(uris);
     setIsRunningTests(false);
@@ -260,7 +264,7 @@ function App() {
             Stop
           </button>
           <button className="btn px-4 py-2 ms-2" onClick={isRunningTests ? stopTestAll : testAllHandler}>
-            {!isRunningTests ? 'Test All' : 'Stop Test All'}
+            {!isRunningTests ? 'Test All' : 'Stop Test All'} {isRunningTests && ` / success: ${testAllCount?.success} - failed: ${testAllCount?.failed}`}
           </button>
           <button className="btn px-4 py-2 ms-2" onClick={isRunningTests ? stopTestAll : testFailedHandler}>
             {!isRunningTests ? 'Test Failed' : 'Stop Test All'}
@@ -272,6 +276,23 @@ function App() {
         </div>
 
         <div className="my-4">Status: {status}</div>
+
+
+        <select className="select w-full mb-4" onChange={profileChangeHandler}>
+          <option>Select profile</option>
+          {profiles?.map((profile: ProfileType) => <option key={profile?.id} value={profile?.id}>{profile?.name}</option>)}
+        </select>
+
+
+        <input
+          placeholder="Search ..."
+          type="text"
+          className="input p-2 w-full mb-4"
+          onChange={debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+            const filter = uris.filter((item: URIType) => item?.uri.includes(e?.target?.value) || item?.name.includes(e?.target?.value));
+            setFilteredUri(filter);
+          }, 500)}
+        />
 
         <div className="my-2 flex gap-2 items-center">
           <button className="btn btn-primary px-4 py-3 ms-2" onClick={async () => {
@@ -295,7 +316,7 @@ function App() {
 
             showDialog('Success', 'Configs copied succussfully');
           }}>
-            Copy selected
+            Copy Selected
           </button>
 
           <select className="select p-2" ref={copytoSelectRef}>
@@ -303,23 +324,31 @@ function App() {
             {profiles?.map((profile: ProfileType) => <option key={profile?.id} value={profile?.id}>{profile?.name}</option>)}
           </select>
 
+
+          <button className="btn btn-error px-4 py-3 ms-2" onClick={async () => {
+            const checkboxs = document.querySelectorAll("[name='select[]']:checked");
+            if (checkboxs.length == 0) {
+              showDialog('Error', 'Please select an item');
+              return;
+            }
+
+            checkboxs.forEach(async (el) => {
+              const checkbox = el as HTMLInputElement;
+              const id = checkbox.value;
+
+              await db?.execute("delete from urls where id = ?", [id]);
+
+            });
+
+            showDialog('Success', 'Selected configs deleted succussfully');
+            setTimeout(() => {
+              updateUris(profile);
+            }, 100);
+          }}>
+            Delete Selected
+          </button>
+
         </div>
-
-        <select className="select w-full mb-4" onChange={profileChangeHandler}>
-          <option>Select profile</option>
-          {profiles?.map((profile: ProfileType) => <option key={profile?.id} value={profile?.id}>{profile?.name}</option>)}
-        </select>
-
-
-        <input
-          placeholder="Search ..."
-          type="text"
-          className="input p-2 w-full mb-4"
-          onChange={debounce((e: React.ChangeEvent<HTMLInputElement>) => {
-            const filter = uris.filter((item: URIType) => item?.uri.includes(e?.target?.value) || item?.name.includes(e?.target?.value));
-            setFilteredUri(filter);
-          }, 500)}
-        />
 
         <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
           <table className="w-full table">
