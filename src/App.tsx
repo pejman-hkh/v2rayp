@@ -8,6 +8,24 @@ import { ProfileType } from "./types/Profile";
 import { URIType } from "./types/URI";
 import { makeConfigFile, parseV2rayURI } from "./utils";
 import { GlobalContext } from "./context/Global";
+import { Modal } from "./components/ui/Modal";
+
+type DebouncedFunction = (...args: any[]) => void;
+
+const debounce = (func: DebouncedFunction, delay: number) => {
+  let timeout: number;
+
+  return (...args: any[]) => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
+    timeout = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+};
+
 
 function App() {
   const context = useContext(GlobalContext);
@@ -172,7 +190,7 @@ function App() {
         {delay !== -2 ? delay : uri?.delay}
       </div>
       <div>
-        <button className=" bg-gray-500 text-white px-4 py-2 mr-2" onClick={testHandler}>{testing ? 'Tesing...' : children}</button>
+        <button className=" btn px-4 py-2 mr-2" onClick={testHandler}>{testing ? 'Tesing...' : children}</button>
       </div>
     </div>
   }
@@ -197,95 +215,160 @@ function App() {
   const ConnectButton = ({ children, uri }: { children: ReactNode, uri: any }) => {
     const clickHandler = async () => {
       await connect(uri);
-
+      connectedProfile.current.uri = uri;
       set_system_proxy('127.0.0.1', 1080);
+      showDialog('Connect', 'Connected succussfully');
     }
 
-    return <button className="bg-gray-500 text-white px-4 py-2 mr-2" onClick={clickHandler}>{children}</button>
+    return <button className="btn px-4 py-2 mr-2" onClick={clickHandler}>{children}</button>
   }
+
+  const copytoSelectRef = useRef<HTMLSelectElement>(null);
+  const alertModalRef = useRef<HTMLDialogElement>(null);
+  const [update, setUpdate] = useState(false);
+  const alertData = useRef({ title: 'Error', content: 'Content' });
+  const showDialog = (title: string, content: string) => {
+    alertData.current = { title, content };
+    alertModalRef.current?.showModal();
+    setUpdate(!update);
+  }
+
+
+  const connectedProfile = useRef({ uri: null });
 
   return (
     <div className="p-4">
+      <Modal
+        title={alertData?.current?.title}
+        content={alertData?.current?.content}
+        fref={alertModalRef}
+      />
+
       <Profile
         setUris={setUris}
         updateProfiles={updateProfiles}
+        showDialog={showDialog}
       />
       <Card>
         <h1 className="text-2xl font-bold mb-4">V2Ray Start</h1>
-        <select className="border p-2 w-full mb-4" onChange={profileChangeHandler}>
-          <option>Select</option>
+
+        <div className="flex items-center">
+          <button className="btn btn-success px-4 py-2 ms-2 my-2" onClick={startV2Ray}>
+            Start
+          </button>
+          <button className="btn btn-error px-4 py-2 ms-2" onClick={stopV2Ray}>
+            Stop
+          </button>
+          <button className="btn px-4 py-2 ms-2" onClick={isRunningTests ? stopTestAll : testAllHandler}>
+            {!isRunningTests ? 'Test All' : 'Stop Test All'}
+          </button>
+          <button className="btn px-4 py-2 ms-2" onClick={isRunningTests ? stopTestAll : testFailedHandler}>
+            {!isRunningTests ? 'Test Failed' : 'Stop Test All'}
+          </button>
+
+          <button className="btn px-4 py-2 ms-2" onClick={() => updateUris(profile)}>
+            Sort
+          </button>
+        </div>
+
+        <div className="my-4">Status: {status}</div>
+
+        <div className="my-2 flex gap-2 items-center">
+          <button className="btn btn-primary px-4 py-3 ms-2" onClick={async () => {
+            const checkboxs = document.querySelectorAll("[name='select[]']:checked");
+            if (checkboxs.length == 0) {
+              showDialog('Error', 'Please select an item');
+              return;
+            }
+
+            checkboxs.forEach(async (el) => {
+              const checkbox = el as HTMLInputElement;
+              const id = checkbox.value;
+
+              const item = (await db?.select<URIType[]>("select * from urls where id = ?", [id]))?.[0];
+              const check = (await db?.select<URIType[]>("select * from urls where profile_id = ? and uri = ? ", [copytoSelectRef?.current?.value, item?.uri]))?.[0];
+              if (!check?.id) {
+                await db?.execute("insert into urls(profile_id, name, uri) values(?, ?, ?)", [copytoSelectRef?.current?.value, item?.name, item?.uri]);
+              }
+
+            });
+
+            showDialog('Success', 'Configs copied succussfully');
+          }}>
+            Copy selected
+          </button>
+
+          <select className="select p-2" ref={copytoSelectRef}>
+            <option>Select</option>
+            {profiles?.map((profile: ProfileType) => <option key={profile?.id} value={profile?.id}>{profile?.name}</option>)}
+          </select>
+
+        </div>
+
+        <select className="select w-full mb-4" onChange={profileChangeHandler}>
+          <option>Select profile</option>
           {profiles?.map((profile: ProfileType) => <option key={profile?.id} value={profile?.id}>{profile?.name}</option>)}
         </select>
 
-        <button className="bg-gray-500 text-white px-4 py-2 ms-2" onClick={startV2Ray}>
-          Start
-        </button>
-        <button className="bg-gray-500 text-white px-4 py-2 ms-2" onClick={stopV2Ray}>
-          Stop
-        </button>
-        <button className="bg-gray-500 text-white px-4 py-2 ms-2" onClick={isRunningTests ? stopTestAll : testAllHandler}>
-          {!isRunningTests ? 'Test All' : 'Stop Test All'}
-        </button>
-        <button className="bg-gray-500 text-white px-4 py-2 ms-2" onClick={isRunningTests ? stopTestAll : testFailedHandler}>
-          {!isRunningTests ? 'Test Failed' : 'Stop Test All'}
-        </button>
-
-        <button className="bg-gray-500 text-white px-4 py-2 ms-2" onClick={() => updateUris(profile)}>
-          Sort
-        </button>
-
-        <div className="mt-4">Status: {status}</div>
 
         <input
           placeholder="Search ..."
           type="text"
-          className="border p-2 w-full mb-4"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          className="input p-2 w-full mb-4"
+          onChange={debounce((e: React.ChangeEvent<HTMLInputElement>) => {
             const filter = uris.filter((item: URIType) => item?.uri.includes(e?.target?.value) || item?.name.includes(e?.target?.value));
             setFilteredUri(filter);
-          }}
+          }, 500)}
         />
-        <div className="relative overflow-x-auto">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+
+        <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
+          <table className="w-full table">
+            <thead>
               <tr>
 
-                <th scope="col" className="px-6 py-3">
+                <th>
+                  -
+                </th>
+
+                <th>
                   Row
                 </th>
-                <th scope="col" className="px-6 py-3">
+                <th>
                   Test
                 </th>
-                <th scope="col" className="px-6 py-3">
+                <th>
                   Connect
                 </th>
-                <th scope="col" className="px-6 py-3">
+                <th>
                   Name
                 </th>
-                <th scope="col" className="px-6 py-3">
+                <th>
                   URI
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Actions
                 </th>
               </tr>
             </thead>
             <tbody>
-              {filteredUri?.map((uri: URIType, row) => (<tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200" key={uri?.id}>
-                <td className="px-6 py-4">{row + 1} - {uri?.id}</td>
-                <td className="px-6 py-4">
-                  <DelayButton uri={uri}>Test</DelayButton>
-                </td>
-                <td className="px-6 py-4">
+              {filteredUri?.map((uri: URIType, row) => (
+                <tr key={uri?.id} className={connectedProfile.current?.uri?.id && connectedProfile.current.uri.id === uri.id ? 'bg-green-100' : ''}>
+                  <td>
+                    <input className="checkbox" type="checkbox" name="select[]" value={uri?.id} />
+                  </td>
+                  <td>{row + 1} - {uri?.id}</td>
 
-                  <ConnectButton uri={uri}>Connect</ConnectButton>
+                  <td>
+                    <DelayButton uri={uri}>Test</DelayButton>
+                  </td>
+                  <td>
 
-                </td>
-                <td className="px-6 py-4 max-w-[5rem]">{decodeURIComponent(uri?.name)}</td>
-                <td className="px-6 py-4">
-                  <div className="max-w-[10rem] whitespace-nowrap overflow-hidden text-ellipsis">{uri?.uri}</div>
-                </td>
-              </tr>))}
+                    <ConnectButton uri={uri}>Connect</ConnectButton>
+
+                  </td>
+                  <td className="px-6 py-4 max-w-[5rem]">{decodeURIComponent(uri?.name)}</td>
+                  <td>
+                    <div className="max-w-[10rem] whitespace-nowrap overflow-hidden text-ellipsis">{uri?.uri}</div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
