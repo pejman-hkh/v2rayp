@@ -175,24 +175,26 @@ async fn measure_delay() -> i64 {
 
     let client = reqwest::Client::builder()
         .proxy(proxy)
-        .timeout(std::time::Duration::from_secs(5))
         .build()
         .expect("Failed to build client");
 
     let start = std::time::Instant::now();
 
-    let result = client
+    let request_future = client
         .get("https://www.google.com/generate_204")
-        .send()
-        .await;
+        .send();
 
-    match result {
-        Ok(resp) => {
+    match tokio::time::timeout(std::time::Duration::from_secs(2), request_future).await {
+        Ok(Ok(resp)) => {
             println!("status: {}", resp.status());
             start.elapsed().as_millis() as i64
         }
-        Err(e) => {
-            println!("error: {}", e);
+        Ok(Err(e)) => {
+            println!("request error: {}", e);
+            -1
+        }
+        Err(_) => {
+            println!("timeout");
             -1
         }
     }

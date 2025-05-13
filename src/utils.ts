@@ -1,29 +1,6 @@
 import { Buffer } from 'buffer';
 import { URIType } from './types/URI';
 
-// function setSystemProxy(host, port) {
-//     const commands = [
-//         `gsettings set org.gnome.system.proxy mode 'manual'`,
-//         `gsettings set org.gnome.system.proxy.http host ''`,
-//         `gsettings set org.gnome.system.proxy.http port 0`,
-//         `gsettings set org.gnome.system.proxy.https host ''`,
-//         `gsettings set org.gnome.system.proxy.https port 0`,
-//         `gsettings set org.gnome.system.proxy.ftp host ''`,
-//         `gsettings set org.gnome.system.proxy.ftp port 0`,
-//         `gsettings set org.gnome.system.proxy.socks host '${host}'`,
-//         `gsettings set org.gnome.system.proxy.socks port ${port}`,
-//     ];
-
-//     for (const cmd of commands) {
-//         exec(cmd, (err, stdout, stderr) => {
-//             if (err) {
-//                 console.error(`Error executing "${cmd}":`, err.message);
-//             }
-//         });
-//     }
-
-//     console.log('Proxy settings applied');
-// }
 
 export async function extractGroupUrls(url: string) {
     const response = await fetch(url);
