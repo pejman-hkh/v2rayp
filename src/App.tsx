@@ -234,7 +234,7 @@ function App() {
   }
 
 
-  const connectedProfile = useRef({ uri: null });
+  const connectedProfile = useRef<{ uri: URIType | null }>({ uri: null });
 
   return (
     <div className="p-4">
