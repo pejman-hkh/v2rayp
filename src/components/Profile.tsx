@@ -18,11 +18,15 @@ export function Profile({
 }: Props) {
 
     const [loading, setLoading] = useState(false);
+    const [count, setCount] = useState(0);
+    const [all, setAll] = useState(0);
 
     const context = useContext(GlobalContext);
     const db = context?.db;
 
     const addNewProfile = async () => {
+        setCount(0);
+        setAll(0);
         if (titleRef?.current?.value === '') {
             showDialog('Error', 'Please enter title');
             return;
@@ -34,11 +38,11 @@ export function Profile({
             const title = titleRef?.current?.value;
             const result = await db?.select<ProfileType[]>("select id from profiles where name = ?", [title]);
             const profile = result?.[0];
-            if (profile?.id) {
-                showDialog('Error', 'Profile with this name exists');
-                setLoading(false);
-                return;
-            }
+            // if (profile?.id) {
+            //     showDialog('Error', 'Profile with this name exists');
+            //     setLoading(false);
+            //     return;
+            // }
             let profile_id = 0;
             if (!profile?.id) {
                 await db?.execute("insert into profiles(name, uri) values(?, ?)", [title ?? uri, uri]);
@@ -50,12 +54,14 @@ export function Profile({
 
             if (uri) {
                 const urls = await extractGroupUrls(uri);
+                setAll(urls?.length);
                 for (const value of urls) {
                     const result = await db?.select<Array<URIType>>("select id from urls where profile_id = ? and uri = ?", [profile_id, value?.url])
                     const url = result?.[0];
                     if (!url?.id) {
                         await db?.execute("insert into urls(profile_id, name, uri) values(?, ?, ?)", [profile_id, value?.name, value?.url]);
                     }
+                    setCount((prev) => prev + 1);
                 };
 
                 const uris = await db?.select<React.SetStateAction<URIType[]>>("select * from urls where profile_id = ? order by delay desc", [profile_id]);
@@ -91,7 +97,10 @@ export function Profile({
             />
             <button disabled={loading} className="btn px-4 py-2 mr-2" onClick={addNewProfile}>
                 {loading ? 'Loading ...' : 'Add New Profile'} {loading && <span className="loading loading-ring loading-md"></span>}
+                {loading && `${count} from ${all}`}
             </button>
+
+            {loading && <progress className="progress progress-success w-56" value={count / all * 100} max="100"></progress>}
         </Card>
 
     );
