@@ -62,7 +62,14 @@ fn spawn_v2ray(process: &mut Option<Child>, config_path: String) -> String {
         return "already running".into();
     }
 
-    let command = std::env::current_dir().unwrap().join("/usr/bin/v2ray");
+    let v2ray_path = match std::env::consts::OS {
+        "linux" => "/usr/bin/v2ray",
+        "windows" => "C:\\Program Files\\V2Ray\\v2ray.exe",
+        "macos" => "/usr/local/bin/v2ray",
+        _ => return format!("unsupported OS: {}", std::env::consts::OS),
+    };
+
+    let command = std::env::current_dir().unwrap().join(v2ray_path);
 
     println!("started");
 
@@ -180,9 +187,7 @@ async fn measure_delay() -> i64 {
 
     let start = std::time::Instant::now();
 
-    let request_future = client
-        .get("https://www.google.com/generate_204")
-        .send();
+    let request_future = client.get("https://www.google.com/generate_204").send();
 
     match tokio::time::timeout(std::time::Duration::from_secs(2), request_future).await {
         Ok(Ok(resp)) => {

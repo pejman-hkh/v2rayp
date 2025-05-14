@@ -276,7 +276,16 @@ function App() {
           </button>
         </div>
 
-        <div className="my-4">Status: {status}</div>
+        <div className="my-4">Status: {status}
+          {status === 'started' && <>
+            <div>
+              Socks Proxy : socks5://127.0.0.1:1080
+            </div>
+            <div>
+              Test Proxy : http://127.0.0.1:1081
+            </div>
+          </>}
+        </div>
 
 
         <select className="select w-full mb-4" onChange={profileChangeHandler}>
