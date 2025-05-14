@@ -190,8 +190,8 @@ function App() {
     }
 
     return <div className="flex gap-4 items-center">
-      <div>
-        {delay !== -2 ? delay : uri?.delay}
+      <div className="btn">
+        {delay !== -2 ? delay : uri?.delay} ms
       </div>
       <div>
         <button className=" btn px-4 py-2 mr-2" onClick={testHandler}>{testing ? 'Tesing...' : children}</button>
@@ -256,7 +256,7 @@ function App() {
       <Card>
         <h1 className="text-2xl font-bold mb-4">V2Ray Start</h1>
 
-        <div className="flex items-center">
+        <div className="flex items-center flex-wrap">
           <button className="btn btn-success px-4 py-2 ms-2 my-2" onClick={startV2Ray}>
             Start
           </button>
@@ -294,7 +294,7 @@ function App() {
           }, 500)}
         />
 
-        <div className="my-2 flex gap-2 items-center">
+        <div className="my-2 flex gap-2 items-center flex-wrap">
           <button className="btn btn-primary px-4 py-3 ms-2" onClick={async () => {
             const checkboxs = document.querySelectorAll("[name='select[]']:checked");
             if (checkboxs.length == 0) {
@@ -351,50 +351,34 @@ function App() {
         </div>
 
         <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
-          <table className="w-full table">
-            <thead>
+          <table className="w-full table table-zebra">
+            <thead className="hidden md:table-header-group">
               <tr>
-
-                <th>
-                  -
-                </th>
-
-                <th>
-                  Row
-                </th>
-                <th>
-                  Test
-                </th>
-                <th>
-                  Connect
-                </th>
-                <th>
-                  Name
-                </th>
-                <th>
-                  URI
-                </th>
+                <th>-</th>
+                <th>Row</th>
+                <th>Test</th>
+                <th>Connect</th>
+                <th>Name</th>
+                <th>URI</th>
               </tr>
             </thead>
             <tbody>
               {filteredUri?.map((uri: URIType, row) => (
-                <tr key={uri?.id} className={connectedProfile.current?.uri?.id && connectedProfile.current.uri.id === uri.id ? 'bg-green-100' : ''}>
-                  <td>
+                <tr key={uri?.id} className={"block md:table-row mb-4 md:mb-0 p-2 md:p-0 rounded md:rounded-none " + (connectedProfile.current?.uri?.id && connectedProfile.current.uri.id === uri.id ? 'bg-green-100' : '')}>
+                  <td className="block md:table-cell">
                     <input className="checkbox" type="checkbox" name="select[]" value={uri?.id} />
                   </td>
                   <td>{row + 1} - {uri?.id}</td>
 
-                  <td>
+                  <td className="block md:table-cell">
                     <DelayButton uri={uri}>Test</DelayButton>
                   </td>
                   <td>
-
-                    <ConnectButton uri={uri}>Connect</ConnectButton>
-
+                    <ConnectButton uri={uri}>{connectedProfile.current?.uri?.id && connectedProfile.current.uri.id === uri.id ? 'Connected' : 'Connect'}</ConnectButton>
                   </td>
-                  <td className="px-6 py-4 max-w-[5rem]">{decodeURIComponent(uri?.name)}</td>
-                  <td>
-                    <div className="max-w-[10rem] whitespace-nowrap overflow-hidden text-ellipsis">{uri?.uri}</div>
+                  <td className="block md:table-cell">{decodeURIComponent(uri?.name)}</td>
+                  <td className="block md:table-cell">
+                    <div className="max-w-[16rem] whitespace-nowrap overflow-hidden text-ellipsis">{uri?.uri}</div>
                   </td>
                 </tr>
               ))}
