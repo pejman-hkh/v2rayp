@@ -1,6 +1,6 @@
 import { RefObject } from "react";
 
-export function Modal({ fref, title, content }: { fref: RefObject<HTMLDialogElement>, title: string, content: string }) {
+export function Modal({ fref, title, content }: { fref: RefObject<HTMLDialogElement>, title: string, content: string | React.ReactNode }) {
     return (
         <dialog ref={fref} className="modal">
             <div className="modal-box">

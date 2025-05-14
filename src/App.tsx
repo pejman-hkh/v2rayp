@@ -9,6 +9,8 @@ import { URIType } from "./types/URI";
 import { makeConfigFile, parseV2rayURI } from "./utils";
 import { GlobalContext } from "./context/Global";
 import { Modal } from "./components/ui/Modal";
+import { QRCodeSVG } from "qrcode.react";
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 type DebouncedFunction = (...args: any[]) => void;
 
@@ -230,13 +232,12 @@ function App() {
   const copytoSelectRef = useRef<HTMLSelectElement>(null);
   const alertModalRef = useRef<HTMLDialogElement>(null);
   const [update, setUpdate] = useState(false);
-  const alertData = useRef({ title: 'Error', content: 'Content' });
-  const showDialog = (title: string, content: string) => {
+  const alertData = useRef<{ title: string, content: string | ReactNode }>({ title: 'Error', content: 'Content' });
+  const showDialog = (title: string, content: string | ReactNode) => {
     alertData.current = { title, content };
     alertModalRef.current?.showModal();
     setUpdate(!update);
   }
-
 
   const connectedProfile = useRef<{ uri: URIType | null }>({ uri: null });
 
@@ -295,7 +296,7 @@ function App() {
         />
 
         <div className="my-2 flex gap-2 items-center flex-wrap">
-          <button className="btn btn-primary px-4 py-3 ms-2" onClick={async () => {
+          <button className="btn btn-primary px-4 py-3" onClick={async () => {
             const checkboxs = document.querySelectorAll("[name='select[]']:checked");
             if (checkboxs.length == 0) {
               showDialog('Error', 'Please select an item');
@@ -325,7 +326,7 @@ function App() {
           </select>
 
 
-          <button className="btn btn-error px-4 py-3 ms-2" onClick={async () => {
+          <button className="btn btn-error px-4 py-3" onClick={async () => {
             const checkboxs = document.querySelectorAll("[name='select[]']:checked");
             if (checkboxs.length == 0) {
               showDialog('Error', 'Please select an item');
@@ -360,11 +361,13 @@ function App() {
                 <th>Connect</th>
                 <th>Name</th>
                 <th>URI</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUri?.map((uri: URIType, row) => (
-                <tr key={uri?.id} className={"block md:table-row mb-4 md:mb-0 p-2 md:p-0 rounded md:rounded-none " + (connectedProfile.current?.uri?.id && connectedProfile.current.uri.id === uri.id ? 'bg-green-100' : '')}>
+                <tr key={uri?.id} className={"block md:table-row mb-4 md:mb-0 p-2 md:p-0 rounded md:rounded-none " +
+                  (connectedProfile.current?.uri?.id && connectedProfile.current.uri.id === uri.id ? '!bg-green-100' : '')}>
                   <td className="block md:table-cell">
                     <input className="checkbox" type="checkbox" name="select[]" value={uri?.id} />
                   </td>
@@ -378,7 +381,20 @@ function App() {
                   </td>
                   <td className="block md:table-cell">{decodeURIComponent(uri?.name)}</td>
                   <td className="block md:table-cell">
-                    <div className="max-w-[16rem] whitespace-nowrap overflow-hidden text-ellipsis">{uri?.uri}</div>
+                    <div className="max-w-[16rem] whitespace-nowrap overflow-hidden text-ellipsis">
+                      {uri?.uri}
+                    </div>
+                  </td>
+                  <td className="block md:table-cell">
+                    <button className="btn me-2" onClick={() => {
+                      showDialog('QRCode', <div className="flex justify-center"><QRCodeSVG value={uri?.uri} level="H" /></div>);
+                    }}>QRCode</button>
+                    <CopyToClipboard text={uri?.uri} onCopy={() => {
+                      showDialog('Copy to Clipboard', 'Copied succussfully')
+                    }}>
+                      <button className="btn me-2">Copy</button>
+                    </CopyToClipboard>
+
                   </td>
                 </tr>
               ))}

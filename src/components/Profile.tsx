@@ -1,5 +1,5 @@
 import { Card } from "./ui/Card";
-import { useContext, useRef, useState } from "react";
+import { ReactNode, useContext, useRef, useState } from "react";
 import { GlobalContext } from "../context/Global";
 import { ProfileType } from "../types/Profile";
 import { URIType } from "../types/URI";
@@ -9,7 +9,7 @@ import { extractGroupUrls } from "../utils";
 type Props = {
     setUris: React.Dispatch<React.SetStateAction<Array<URIType>>>;
     updateProfiles: () => void,
-    showDialog: (title: string, content: string) => void
+    showDialog: (title: string, content: string | ReactNode) => void
 }
 export function Profile({
     setUris,
