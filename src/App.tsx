@@ -11,6 +11,7 @@ import { GlobalContext } from "./context/Global";
 import { Modal } from "./components/ui/Modal";
 import { QRCodeSVG } from "qrcode.react";
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { AddConfig } from "./components/AddConfig";
 
 type DebouncedFunction = (...args: any[]) => void;
 
@@ -37,7 +38,7 @@ function App() {
   const [uris, setUris] = useState<Array<URIType>>([]);
   const [filteredUri, setFilteredUri] = useState<Array<URIType>>([]);
   const [profiles, setProfiles] = useState<ProfileType[]>([]);
-  const [profile, setProfile] = useState(0);
+  const [profile, setProfile] = useState<ProfileType | undefined>(undefined);
   const [testAllCount, setTestAllCount] = useState({ failed: 0, success: 0 });
   const stopTesting = useRef<boolean>(false);
   const [isRunningTests, setIsRunningTests] = useState(false);
@@ -77,7 +78,9 @@ function App() {
   const profileChangeHandler = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const profile_id = parseInt(e?.target?.value);
     updateUris(profile_id);
-    setProfile(profile_id);
+    const profile = (await db?.select<ProfileType[]>("select * from profiles where id = ?", [profile_id]))?.[0];
+    console.log(profile);
+    setProfile(profile);
   }
 
   const startV2Ray = async () => {
@@ -192,7 +195,7 @@ function App() {
     }
 
     return <div className="flex gap-4 items-center">
-      <div className="btn">
+      <div className="btn delay">
         {delay !== -2 ? delay : uri?.delay} ms
       </div>
       <div>
@@ -231,6 +234,7 @@ function App() {
 
   const copytoSelectRef = useRef<HTMLSelectElement>(null);
   const alertModalRef = useRef<HTMLDialogElement>(null);
+
   const [update, setUpdate] = useState(false);
   const alertData = useRef<{ title: string, content: string | ReactNode }>({ title: 'Error', content: 'Content' });
   const showDialog = (title: string, content: string | ReactNode) => {
@@ -271,7 +275,7 @@ function App() {
             {!isRunningTests ? 'Test Failed' : 'Stop Test All'}
           </button>
 
-          <button className="btn px-4 py-2 ms-2" onClick={() => updateUris(profile)}>
+          <button className="btn px-4 py-2 ms-2" onClick={() => updateUris(profile?.id || 0)}>
             Sort
           </button>
         </div>
@@ -305,7 +309,22 @@ function App() {
         />
 
         <div className="my-2 flex gap-2 items-center flex-wrap">
-          <button className="btn btn-primary px-4 py-3" onClick={async () => {
+          <button className="btn" onClick={() => {
+            const trs = document.querySelectorAll("tr");
+            trs.forEach((tr) => {
+              console.log(tr);
+              const delay = parseInt(tr.querySelector(".delay")?.innerHTML.replace("ms", "")!);
+              if (delay && delay !== -1) {
+                const checkBox = tr.querySelector("input[type='checkbox']") as HTMLInputElement
+                if (checkBox) {
+                  checkBox.checked = checkBox.checked ? false : true;
+                }
+
+              }
+            });
+          }}>Select Success Config</button>
+
+          <button className="btn px-4 py-3" onClick={async () => {
             const checkboxs = document.querySelectorAll("[name='select[]']:checked");
             if (checkboxs.length == 0) {
               showDialog('Error', 'Please select an item');
@@ -328,7 +347,7 @@ function App() {
           }}>
             Copy Selected
           </button>
-
+          to
           <select className="select p-2" ref={copytoSelectRef}>
             <option>Select</option>
             {profiles?.map((profile: ProfileType) => <option key={profile?.id} value={profile?.id}>{profile?.name}</option>)}
@@ -352,13 +371,23 @@ function App() {
 
             showDialog('Success', 'Selected configs deleted succussfully');
             setTimeout(() => {
-              updateUris(profile);
+              updateUris(profile?.id || 0);
             }, 100);
           }}>
             Delete Selected
           </button>
 
         </div>
+
+        {profile?.id &&
+          <>
+            <AddConfig
+              profile={profile}
+              showDialog={showDialog}
+              updateUris={updateUris}
+            />
+          </>
+        }
 
         <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
           <table className="w-full table table-zebra">
