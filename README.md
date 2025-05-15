@@ -27,3 +27,7 @@ This is the **initial release** of the app. Please note:
 - The **Backend Logic**
 
 will be **significantly improved** in future updates.
+
+# Download
+
+https://github.com/pejman-hkh/v2rayp/releases
