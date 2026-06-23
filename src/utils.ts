@@ -231,7 +231,95 @@ export function parseV2rayURI(uri: URIType) {
     }
 
     if (url.startsWith('ss://')) {
-        return '';
+        // Support common Shadowsocks URI formats:
+        // - ss://method:password@host:port
+        // - ss://BASE64(method:password@host:port)
+        // - ss://BASE64(method:password)@host:port  (less common)
+        try {
+            let data = url.replace('ss://', '');
+            let name = '';
+            const hashIdx = data.indexOf('#');
+            if (hashIdx !== -1) {
+                name = decodeURIComponent(data.slice(hashIdx + 1));
+                data = data.slice(0, hashIdx);
+            }
+
+            let method = '';
+            let password = '';
+            let host = '';
+            let port = 0;
+
+            // If contains '@', attempt to parse as URL (handles user:pass@host:port)
+            if (data.includes('@')) {
+                const u = new URL('ss://' + data);
+                method = decodeURIComponent(u.username || '');
+                password = decodeURIComponent(u.password || '');
+                host = u.hostname;
+                port = parseInt(u.port || '0') || 0;
+            } else {
+                // Try base64 decode
+                const firstPart = data.split('?')[0];
+                try {
+                    const decoded = Buffer.from(firstPart.replace(/\s+/g, ''), 'base64').toString();
+                    // expected decoded like method:password@host:port
+                    const at = decoded.lastIndexOf('@');
+                    if (at !== -1) {
+                        const cred = decoded.slice(0, at);
+                        const hostPart = decoded.slice(at + 1);
+                        const colon = cred.indexOf(':');
+                        if (colon !== -1) {
+                            method = cred.slice(0, colon);
+                            password = cred.slice(colon + 1);
+                        }
+                        const hp = hostPart.split(':');
+                        host = hp[0] || '';
+                        port = parseInt(hp[1] || '0') || 0;
+                    } else {
+                        // fallback: some ss URIs encode only method:password in base64 and append @host:port
+                        // try splitting on '@' in original data
+                        const parts = data.split('@');
+                        if (parts.length === 2) {
+                            const creds = Buffer.from(parts[0], 'base64').toString();
+                            const colon = creds.indexOf(':');
+                            if (colon !== -1) {
+                                method = creds.slice(0, colon);
+                                password = creds.slice(colon + 1);
+                            }
+                            const hp = parts[1].split(':');
+                            host = hp[0] || '';
+                            port = parseInt(hp[1] || '0') || 0;
+                        }
+                    }
+                } catch (e) {
+                    // ignore decode errors
+                }
+            }
+
+            // Validate parsed fields: host, port, method and password are required for Shadowsocks
+            if (!host || !port || !method || !password) {
+                console.warn('parseV2rayURI: incomplete Shadowsocks URI, skipping outbound', { host, port, method, password });
+                return '';
+            }
+
+            return {
+                tag: 'proxy-' + uri?.id,
+                protocol: 'shadowsocks',
+                settings: {
+                    servers: [{
+                        address: host,
+                        port: port,
+                        method: method,
+                        password: password,
+                    }],
+                },
+                streamSettings: {
+                    network: 'tcp',
+                    security: 'none',
+                },
+            };
+        } catch (e) {
+            return '';
+        }
     }
 
     console.log('Unsupported URI scheme: ' + url);
