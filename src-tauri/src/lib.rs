@@ -63,7 +63,7 @@ fn spawn_v2ray(process: &mut Option<Child>, config_path: String) -> String {
     }
 
     let v2ray_path = match std::env::consts::OS {
-        "linux" => "/usr/bin/xray",
+        "linux" => "/usr/lib/tauri-v2rayp/bundle/resources/xray",
         "windows" => "C:\\Program Files\\V2Ray\\v2ray.exe",
         "macos" => "/usr/local/bin/v2ray",
         _ => return format!("unsupported OS: {}", std::env::consts::OS),
