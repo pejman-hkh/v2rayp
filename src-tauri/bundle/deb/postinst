@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+# postinst: install bundled xray binary to /usr/bin if present
+APP_NAME="tauri-v2rayp"
+# Common install locations for Tauri bundle
+CANDIDATES=("/opt/$APP_NAME" "/opt/$APP_NAME/" "/usr/share/$APP_NAME" "/usr/share/$APP_NAME/")
+for dir in "${CANDIDATES[@]}"; do
+  if [ -f "$dir/xray" ]; then
+    install -m 0755 "$dir/xray" /usr/bin/xray || true
+    break
+  fi
+  if [ -f "$dir/bundle/resources/xray" ]; then
+    install -m 0755 "$dir/bundle/resources/xray" /usr/bin/xray || true
+    break
+  fi
+done
+exit 0
