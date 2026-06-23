@@ -237,10 +237,10 @@ export function parseV2rayURI(uri: URIType) {
         // - ss://BASE64(method:password)@host:port  (less common)
         try {
             let data = url.replace('ss://', '');
-            let name = '';
+            // let name = '';
             const hashIdx = data.indexOf('#');
             if (hashIdx !== -1) {
-                name = decodeURIComponent(data.slice(hashIdx + 1));
+                //name = decodeURIComponent(data.slice(hashIdx + 1));
                 data = data.slice(0, hashIdx);
             }
 
