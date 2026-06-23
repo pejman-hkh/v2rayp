@@ -40,7 +40,7 @@ export async function extractGroupUrls(url: string) {
     return urlsWithNames;
 }
 
-export function makeConfigFile(outbounds: Array<any>, outboundTag: string, port = 1080, type = "socks") {
+export function makeConfigFile(outbounds: Array<any>, outboundTag: string, port = 1085, type = "socks") {
     return {
         inbounds: [{
             tag: type + "-proxy1",

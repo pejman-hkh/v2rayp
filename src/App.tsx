@@ -59,7 +59,7 @@ function App() {
     }
   }
 
-  const makeConfigs = async (file: string, outbound = 'proxy-1', port = 1080, type = 'socks') => {
+  const makeConfigs = async (file: string, outbound = 'proxy-1', port = 1085, type = 'socks') => {
     const outbounds: Array<any> = [];
     uris?.map((uri: URIType) => {
       const parse = parseV2rayURI(uri);
@@ -225,7 +225,7 @@ function App() {
     const clickHandler = async () => {
       await connect(uri);
       connectedProfile.current.uri = uri;
-      set_system_proxy('127.0.0.1', 1080);
+      set_system_proxy('127.0.0.1', 1085);
       showDialog('Connect', 'Connected succussfully');
     }
 
@@ -283,7 +283,7 @@ function App() {
         <div className="my-4">Status: {status}
           {status === 'started' && <>
             <div>
-              Socks Proxy : socks5://127.0.0.1:1080
+              Socks Proxy : socks5://127.0.0.1:1085
             </div>
             <div>
               Test Proxy : http://127.0.0.1:1081
