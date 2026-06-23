@@ -207,18 +207,18 @@ function App() {
   const connectTest = async (uri: URIType) => {
     await makeConfigs('v2ray_config_test.json', 'proxy-' + uri.id, 1081, 'http');
     await stop_test_v2ray();
-    await new Promise(r => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 150));
     await start_test_v2ray("v2ray_config_test.json");
-    await new Promise(r => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 150));
   }
 
   const connect = async (uri: URIType) => {
     await makeConfigs('v2ray_config.json', 'proxy-' + uri.id);
     await stop_v2ray();
-    await new Promise(r => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 150));
     const res = await start_v2ray("v2ray_config.json");
     setStatus(res as string);
-    await new Promise(r => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 150));
   }
 
   const ConnectButton = ({ children, uri }: { children: ReactNode, uri: any }) => {
