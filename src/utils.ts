@@ -65,6 +65,37 @@ export function makeConfigFile(outbounds: Array<any>, outboundTag: string, port 
     }
 }
 
+export function makeMainConfigFile(outbounds: Array<any>, outboundTag: string) {
+    return {
+        inbounds: [{
+            tag: "socks-proxy1",
+            port: "1085",
+            listen: '127.0.0.1',
+            protocol: "socks",
+            settings: {
+                auth: 'noauth',
+                udp: true,
+            },
+        },
+        {
+            tag: "http-proxy1",
+            port: "1086",
+            listen: '127.0.0.1',
+            protocol: "http",
+        }],
+        outbounds: outbounds,
+        routing: {
+            rules: [
+                {
+                    type: "field",
+                    inboundTag: ["socks-proxy1", "http-proxy1"],
+                    outboundTag: outboundTag
+                }
+            ]
+        }
+    }
+}
+
 export function parseV2rayURI(uri: URIType) {
     const url = uri.uri;
     if (url.startsWith('vmess://')) {

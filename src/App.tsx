@@ -6,7 +6,7 @@ import { Card } from "./components/ui/Card";
 import { measure_delay, set_system_proxy, start_test_v2ray, start_v2ray, stop_test_v2ray, stop_v2ray } from "./invokes";
 import { ProfileType } from "./types/Profile";
 import { URIType } from "./types/URI";
-import { makeConfigFile, parseV2rayURI } from "./utils";
+import { makeConfigFile, makeMainConfigFile, parseV2rayURI } from "./utils";
 import { GlobalContext } from "./context/Global";
 import { Modal } from "./components/ui/Modal";
 import { QRCodeSVG } from "qrcode.react";
@@ -71,7 +71,12 @@ function App() {
       }
     });
 
-    const configs = makeConfigFile(outbounds, outbound, port, type);
+    let configs;
+    if (port === 1085) {
+      configs = makeMainConfigFile(outbounds, outbound);
+    } else {
+      configs = makeConfigFile(outbounds, outbound, port, type);
+    }
     await writeTextFile(file, JSON.stringify(configs, null, 2), {
       baseDir: BaseDirectory.AppConfig,
     });
@@ -228,7 +233,7 @@ function App() {
     const clickHandler = async () => {
       await connect(uri);
       connectedProfile.current.uri = uri;
-      set_system_proxy('127.0.0.1', 1085);
+      set_system_proxy('127.0.0.1', 1085, 1086);
       showDialog('Connect', 'Connected succussfully');
     }
 
@@ -436,7 +441,7 @@ function App() {
           <div className={`overflow-hidden rounded-[1.5rem] border ${isDark ? "border-slate-800 bg-slate-950/70" : "border-slate-200 bg-white/80"}`}>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-800 text-sm">
-                <thead className={tableHeaderClass}>
+                <thead className={tableHeaderClass+" border-0"}>
                   <tr>
                     <th className="px-4 py-3">Select</th>
                     <th className="px-4 py-3">Row</th>
