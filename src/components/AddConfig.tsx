@@ -2,6 +2,7 @@ import { ReactNode, useContext, useRef, useState } from "react";
 import { ProfileType } from "../types/Profile";
 import { GlobalContext } from "../context/Global";
 import { URIType } from "../types/URI";
+import { Button } from "./ui/Button";
 
 type Props = {
     profile: ProfileType | undefined;
@@ -39,37 +40,33 @@ export function AddConfig({ profile, showDialog, updateUris }: Props) {
     }
 
     return <>
-        <dialog ref={modalRef} className="modal">
-            <div className="modal-box">
-                <h3 className="text-lg font-bold">New Config for {profile?.name}</h3>
-                <p className="py-4">
+        <dialog ref={modalRef} className="rounded-[2rem] border border-slate-800 bg-slate-950/95 p-0 shadow-2xl shadow-slate-950/40">
+            <div className="w-[min(100vw-2rem,32rem)] rounded-[2rem] bg-slate-950/95 p-6 text-slate-100">
+                <h3 className="text-lg font-semibold text-slate-100">New Config for {profile?.name}</h3>
+                <div className="mt-4 space-y-4">
                     <input
                         placeholder="Title"
                         type="text"
-                        className="input p-2 w-full mb-4"
+                        className="w-full rounded-2xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-slate-100 outline-none placeholder:text-slate-500 focus:border-sky-400"
                         ref={titleRef}
                     />
 
                     <input
                         placeholder="URI"
                         type="text"
-                        className="input p-2 w-full mb-4"
+                        className="w-full rounded-2xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-slate-100 outline-none placeholder:text-slate-500 focus:border-sky-400"
                         ref={uriRef}
                     />
-                    <button disabled={loading} className="btn px-4 py-2 mr-2" onClick={addNewConfigHandler}>
-                        {loading ? 'Loading ...' : 'Add New Config'} {loading && <span className="loading loading-ring loading-md"></span>}
-                    </button>
-
-                </p>
+                    <Button disabled={loading} variant="primary" className="w-full" onClick={addNewConfigHandler}>
+                        {loading ? 'Loading ...' : 'Add New Config'} {loading && <span className="ml-2 inline-flex h-4 w-4 animate-spin rounded-full border-2 border-slate-900 border-t-white"></span>}
+                    </Button>
+                </div>
             </div>
-            <form method="dialog" className="modal-backdrop">
-                <button>close</button>
-            </form>
         </dialog>
-        <div className="my-2 flex gap-2 items-center flex-wrap">
-            <button className="btn" onClick={() => {
+        <div className="flex flex-wrap items-center gap-2">
+            <Button variant="primary" onClick={() => {
                 modalRef?.current?.showModal();
-            }}>Add New Config to {profile?.name}</button>
+            }}>Add New Config to {profile?.name}</Button>
         </div>
     </>
 }
