@@ -4,10 +4,10 @@ export const measure_delay = async (): Promise<number> => {
   return await invoke('measure_delay');
 }
 
-export async function set_system_proxy(host: string, port: number) {
+export async function set_system_proxy(host: string, port: number, port1: number) {
 
   try {
-    await invoke('set_system_proxy', { host, port });
+    await invoke('set_system_proxy', { host, port, port1 });
   } catch (err) {
     console.error('Failed to set proxy:', err);
   }
