@@ -1,33 +1,38 @@
 # V2rayp
-Tiny V2ray GUI
 
-### ⚠️ Requirements
+V2rayp is a lightweight desktop application for managing V2Ray-based proxy configurations through a simple graphical interface. It is designed to help users connect to proxy profiles, test latency, and manage subscriptions with less effort.
 
-To run this application, make sure:
+## Overview
 
-- `v2ray` is installed on your system.
-- The executable is located at:
+V2rayp provides a streamlined workflow for:
 
-`/usr/bin/v2ray`
-
----
-
-### 🧩 White Screen Issue
-
-If you see a **white screen** when launching the app, try running it with the following command:
-
-`WEBKIT_DISABLE_COMPOSITING_MODE=1 tauri-v2rayp`
+- managing proxy profiles
+- importing subscription URLs
+- testing connection delay
+- starting and stopping proxy services
+- viewing and copying proxy URIs
+- generating QR codes for quick mobile setup
 
 
-### 🚧 Initial Release
+## Running the Application
 
-This is the **initial release** of the app. Please note:
+After installing the required dependencies, start the application with:
 
-- The **UI (User Interface)** and
-- The **Backend Logic**
+```bash
+tauri-v2rayp
+```
 
-will be **significantly improved** in future updates.
+## Development
 
-# Download
+This project is built with:
+
+- Tauri
+- React
+- TypeScript
+- Tailwind CSS
+
+## Download
+
+Release builds are available at:
 
 https://github.com/pejman-hkh/v2rayp/releases
