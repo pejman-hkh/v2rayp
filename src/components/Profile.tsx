@@ -83,19 +83,19 @@ export function Profile({
     const uriRef = useRef<HTMLInputElement>(null);
     return (
         <Card>
-            <h2 className="mb-4 text-xl font-semibold text-slate-900">Create New Profile</h2>
+            <h2 className="mb-4 text-xl font-semibold dark:text-slate-100">Create New Profile</h2>
             <p className="mb-4 text-sm text-slate-600">Import a subscription URL and turn it into a ready-to-test profile.</p>
             <input
                 placeholder="Title"
                 type="text"
-                className="mb-4 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-500"
+                className="mb-4 w-full rounded-2xl border dark:border-slate-700 dark:bg-slate-900/90 px-4 py-3 dark:text-slate-100 outline-none placeholder:text-slate-500 focus:border-sky-400"
                 ref={titleRef}
             />
 
             <input
                 placeholder="Enter valid URL"
                 type="text"
-                className="mb-4 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-800 outline-none placeholder:text-slate-400 focus:border-sky-500"
+                className="mb-4 w-full rounded-2xl border dark:border-slate-700 dark:bg-slate-900/90 px-4 py-3 dark:text-slate-100 outline-none placeholder:text-slate-500 focus:border-sky-400"
                 ref={uriRef}
             />
             <Button disabled={loading} variant="primary" className="w-full" onClick={addNewProfile}>

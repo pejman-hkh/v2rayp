@@ -40,21 +40,30 @@ export function AddConfig({ profile, showDialog, updateUris }: Props) {
     }
 
     return <>
-        <dialog ref={modalRef} className="rounded-[2rem] border border-slate-800 bg-slate-950/95 p-0 shadow-2xl shadow-slate-950/40">
-            <div className="w-[min(100vw-2rem,32rem)] rounded-[2rem] bg-slate-950/95 p-6 text-slate-100">
-                <h3 className="text-lg font-semibold text-slate-100">New Config for {profile?.name}</h3>
+
+        <dialog ref={modalRef} className="bg-white mt-10 mx-auto rounded-[2rem] border dark:border-slate-800 dark:bg-slate-950/95 p-0 shadow-2xl shadow-slate-950/40 text-slate-600">
+
+            <div className="w-[min(100vw-2rem,32rem)] rounded-[2rem] dark:bg-slate-950/95 p-6 dark:text-slate-100">
+                <button
+                    type="button"
+                    className="rounded-full border dark:border-slate-700 dark:bg-slate-900 px-3 py-2 text-sm dark:text-slate-300 transition dark:hover:border-slate-600 dark:hover:bg-slate-800 outline-none mb-2"
+                    onClick={() => modalRef.current?.close()}
+                >
+                    X
+                </button>
+                <h3 className="text-lg font-semibold dark:text-slate-100">New Config for {profile?.name}</h3>
                 <div className="mt-4 space-y-4">
                     <input
                         placeholder="Title"
                         type="text"
-                        className="w-full rounded-2xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-slate-100 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                        className="w-full rounded-2xl border dark:border-slate-700 dark:bg-slate-900/90 px-4 py-3 dark:text-slate-100 outline-none placeholder:text-slate-500 focus:border-sky-400"
                         ref={titleRef}
                     />
 
                     <input
                         placeholder="URI"
                         type="text"
-                        className="w-full rounded-2xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-slate-100 outline-none placeholder:text-slate-500 focus:border-sky-400"
+                        className="w-full rounded-2xl border dark:border-slate-700 dark:bg-slate-900/90 px-4 py-3 dark:text-slate-100 outline-none placeholder:text-slate-500 focus:border-sky-400"
                         ref={uriRef}
                     />
                     <Button disabled={loading} variant="primary" className="w-full" onClick={addNewConfigHandler}>
