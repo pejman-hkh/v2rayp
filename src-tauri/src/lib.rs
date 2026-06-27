@@ -15,12 +15,21 @@ struct V2RayTestProcessState(Mutex<Option<Child>>);
 
 #[tauri::command]
 fn set_system_proxy(host: String, port: u16, port1: u16) {
+    let host = host.trim();
+
+    if host.is_empty() {
+        let _ = Command::new("gsettings")
+            .args(["set", "org.gnome.system.proxy", "mode", "none"])
+            .status();
+        return;
+    }
+
     let _ = Command::new("gsettings")
         .args(["set", "org.gnome.system.proxy", "mode", "manual"])
         .status();
 
     let _ = Command::new("gsettings")
-        .args(["set", "org.gnome.system.proxy.http", "host", &host])
+        .args(["set", "org.gnome.system.proxy.http", "host", host])
         .status();
 
     let _ = Command::new("gsettings")
@@ -28,7 +37,7 @@ fn set_system_proxy(host: String, port: u16, port1: u16) {
         .status();
 
     let _ = Command::new("gsettings")
-        .args(["set", "org.gnome.system.proxy.https", "host", &host])
+        .args(["set", "org.gnome.system.proxy.https", "host", host])
         .status();
 
     let _ = Command::new("gsettings")
@@ -36,7 +45,7 @@ fn set_system_proxy(host: String, port: u16, port1: u16) {
         .status();
 
     let _ = Command::new("gsettings")
-        .args(["set", "org.gnome.system.proxy.ftp", "host", &host])
+        .args(["set", "org.gnome.system.proxy.ftp", "host", host])
         .status();
 
     let _ = Command::new("gsettings")
@@ -44,7 +53,7 @@ fn set_system_proxy(host: String, port: u16, port1: u16) {
         .status();
 
     let _ = Command::new("gsettings")
-        .args(["set", "org.gnome.system.proxy.socks", "host", &host])
+        .args(["set", "org.gnome.system.proxy.socks", "host", host])
         .status();
 
     let _ = Command::new("gsettings")

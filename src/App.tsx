@@ -92,8 +92,8 @@ function App() {
   }
 
   const startV2Ray = async () => {
+    set_system_proxy('127.0.0.1', 1085, 1086);
     await stop_v2ray();
-
     const first = uris?.[0]?.id
     await makeConfigs('v2ray_config.json', 'proxy-' + first);
     const res = await start_v2ray("v2ray_config.json");
@@ -101,6 +101,7 @@ function App() {
   }
 
   const stopV2Ray = async () => {
+    set_system_proxy('', 0, 0);
     const res = await stop_v2ray();
     setStatus(res as string);
   };
@@ -221,6 +222,7 @@ function App() {
   }
 
   const connect = async (uri: URIType) => {
+    set_system_proxy('127.0.0.1', 1085, 1086);
     await makeConfigs('v2ray_config.json', 'proxy-' + uri.id);
     await stop_v2ray();
     await new Promise(r => setTimeout(r, 150));
@@ -233,7 +235,7 @@ function App() {
     const clickHandler = async () => {
       await connect(uri);
       connectedProfile.current.uri = uri;
-      set_system_proxy('127.0.0.1', 1085, 1086);
+     // set_system_proxy('127.0.0.1', 1085, 1086);
       showDialog('Connect', 'Connected succussfully');
     }
 
@@ -316,7 +318,7 @@ function App() {
               {status === 'started' && (
                 <div className="mt-3 space-y-1">
                   <div>Socks Proxy : socks5://127.0.0.1:1085</div>
-                  <div>Test Proxy : http://127.0.0.1:1081</div>
+                  <div>HTTP Proxy : http://127.0.0.1:1086</div>
                 </div>
               )}
             </div>
@@ -472,7 +474,7 @@ function App() {
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-2">
                           <Button variant="primary" className="px-3 py-2" onClick={() => {
-                            showDialog('QRCode', <div className="flex justify-center"><QRCodeSVG value={uri?.uri} level="H" /></div>);
+                            showDialog('QRCode', <div className="flex justify-center"><QRCodeSVG value={uri?.uri} level="H" size={220} className="h-auto w-auto" /></div>);
                           }}>QRCode</Button>
                           <CopyToClipboard text={uri?.uri} onCopy={() => {
                             showDialog('Copy to Clipboard', 'Copied succussfully');
