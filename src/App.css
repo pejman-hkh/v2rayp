@@ -9,6 +9,8 @@ body {
   min-height: 100%;
 }
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 body {
   margin: 0;
   background: #020617;

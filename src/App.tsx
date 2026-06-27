@@ -198,7 +198,7 @@ function App() {
     }
 
     return <div className="flex items-center gap-3">
-      <div className="rounded-full border border-slate-700 bg-slate-800/80 px-3 py-1 text-sm font-medium text-slate-200">
+      <div className="rounded-full px-3 py-1 text-sm font-medium text-slate-400">
         {delay !== -2 ? delay : uri?.delay} ms
       </div>
       <div>
@@ -269,7 +269,7 @@ function App() {
 
       <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:grid lg:grid-cols-[280px_1fr]">
         <div className="space-y-6">
-          <Card isDark={isDark}>
+          <Card>
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <p className="text-sm uppercase tracking-[0.35em] text-sky-400">V2Rayp</p>
@@ -327,7 +327,7 @@ function App() {
           )}
         </div>
 
-        <Card isDark={isDark}>
+        <Card>
           <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <h2 className={`text-xl font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>Profiles & Configs</h2>

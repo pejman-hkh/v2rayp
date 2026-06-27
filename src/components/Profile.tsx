@@ -17,7 +17,6 @@ export function Profile({
     setUris,
     updateProfiles,
     showDialog,
-    isDark,
 }: Props) {
 
     const [loading, setLoading] = useState(false);
@@ -83,7 +82,7 @@ export function Profile({
     const titleRef = useRef<HTMLInputElement>(null);
     const uriRef = useRef<HTMLInputElement>(null);
     return (
-        <Card isDark={isDark}>
+        <Card>
             <h2 className="mb-4 text-xl font-semibold text-slate-900">Create New Profile</h2>
             <p className="mb-4 text-sm text-slate-600">Import a subscription URL and turn it into a ready-to-test profile.</p>
             <input
